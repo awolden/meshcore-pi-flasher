@@ -1,59 +1,70 @@
-# Meshcore Pi RAK Flasher
+# MeshCore Remote RAK Flasher
 
-A tool for flashing DFU-based NRF boards remotely on a Raspberry Pi.
+Flash and configure MeshCore firmware on NRF boards via a remote airgapped host.
 
-## Usage
+## Quick Start
 
-### Sync Files to Pi
+1. **Download firmware** - Get the latest `.zip` firmware from [meshcore.co.uk](https://meshcore.co.uk) and place it in this directory
 
-Use the `sync-to-pi.sh` script to copy all project files to your Raspberry Pi:
+2. **Edit configuration** - Update the values at the top of `configure-repeater.py` for your device
 
+3. **Run the complete setup**:
+   ```bash
+   ./do-it-all.sh <remote_host_or_ip>
+   ```
+
+That's it! This will sync files, flash firmware, and configure the repeater automatically.
+
+## Manual Steps
+
+If you prefer to run each step manually:
+
+### 1. Sync to Remote
 ```bash
-./sync-to-pi.sh <pi_host_or_ip> [user] [dest_dir]
+./sync-remote.sh <remote_host_or_ip>
 ```
 
-Examples:
+### 2. Flash Firmware
 ```bash
-# Basic usage (uses default user 'pi' and destination '/home/pi/meshcore-pi-rak-flasher')
-./sync-to-pi.sh 192.168.1.100
-
-# With local hostname
-./sync-to-pi.sh raspberrypi.local
-
-# Custom user and destination
-./sync-to-pi.sh 192.168.1.100 myuser /home/myuser/flasher
-
-# With password authentication
-SSHPASS='your_password' ./sync-to-pi.sh 192.168.1.100
-```
-
-**Password Authentication**: If you need password authentication, set the `SSHPASS` environment variable. This requires `sshpass` to be installed:
-- macOS: `brew install hudochenkov/sshpass/sshpass`
-- Ubuntu/Debian: `sudo apt-get install sshpass`
-
-The script will:
-- Create the destination directory on the Pi
-- Copy all files using rsync (excluding .git, .DS_Store, and .log files)
-- Make shell scripts executable on the Pi
-
-### Download Firmware
-
-Download the latest firmware .zip package from [meshcore.co.uk](https://meshcore.co.uk) and place it in this project directory before syncing to the Pi.
-
-### Flash NRF Board
-
-After syncing files to the Pi, use the `flasher.sh` script to flash the firmware package to your NRF board:
-
-```bash
-# On the Raspberry Pi
+# On remote PC
 ./flasher.sh
 ```
 
-The script will:
-- Find the first .zip file in the current directory
-- Detect the NRF board (WisBlock RAK)
-- Install adafruit-nrfutil if needed
-- Flash the firmware directly via serial
-- Open a terminal connection for configuration
+### 3. Configure Repeater
+```bash  
+# On remote PC
+python3 configure-repeater.py
+```
 
-**Configuration**: After flashing, a terminal connection will open. For available configuration commands, visit: https://github.com/ripplebiz/MeshCore/wiki/Repeater-&-Room-Server-CLI-Reference
+## Configuration
+
+Edit values at the top of `configure-repeater.py`:
+- `NAME`: Device name (default: "Repeater-01")
+- `PASSWORD`: Device password (default: "meshcore123")  
+- `FREQ`: Radio frequency (default: "910.525")
+- `BW`: Bandwidth (default: "62.6")
+- `SF`: Spreading factor (default: "7") 
+- `CR`: Coding rate (default: "5")
+- `TX_POWER`: TX power in dBm (default: "22")
+- `ADVERT_INTERVAL`: Ad interval in minutes (default: "60")
+- `FLOOD_ADVERT_INTERVAL`: Flood ad interval in hours (default: "3")
+
+## Password Authentication
+
+For password auth, set `SSHPASS`:
+```bash
+SSHPASS='password' ./do-it-all.sh 192.168.1.100
+```
+
+Requires `sshpass`:
+- macOS: `brew install hudochenkov/sshpass/sshpass`  
+- Linux: `sudo apt install sshpass`
+
+## What It Does
+
+1. Downloads `adafruit-nrfutil` and dependencies offline
+2. Copies everything to remote PC via SSH
+3. Installs Python packages on remote (airgapped)
+4. Flashes firmware via serial
+5. Configures radio settings, device name, and password
+6. Sends advertisement and reboots device
