@@ -10,7 +10,7 @@ Flash and configure MeshCore firmware on NRF boards via a remote airgapped host.
 
 3. **Run the complete setup**:
    ```bash
-   ./do-it-all.sh <remote_host_or_ip>
+   ./do-it-all.sh <remote_host_or_ip> <remote_user>
    ```
 
 That's it! This will sync files, flash firmware, and configure the repeater automatically.
