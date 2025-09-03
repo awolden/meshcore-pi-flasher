@@ -79,9 +79,21 @@ if [ $? -eq 0 ]; then
     # Install pip on remote PC if not available
     echo "Setting up pip on remote PC..."
     $SSH_CMD "$REMOTE_USER@$REMOTE_HOST" "
-        if ! python3 -m pip --version >/dev/null 2>&1; then
+        # Find available python command
+        if command -v python3 >/dev/null 2>&1; then
+            PYTHON_CMD=python3
+        elif command -v python >/dev/null 2>&1; then
+            PYTHON_CMD=python
+        else
+            echo 'Error: No python command found'
+            exit 1
+        fi
+        
+        echo \"Using \$PYTHON_CMD\"
+        
+        if ! \$PYTHON_CMD -m pip --version >/dev/null 2>&1; then
             echo 'Installing pip...'
-            python3 $REMOTE_DEST_DIR/offline_packages/get-pip.py --user --break-system-packages
+            \$PYTHON_CMD $REMOTE_DEST_DIR/offline_packages/get-pip.py --user --break-system-packages
         else
             echo 'pip already available'
         fi
@@ -90,6 +102,16 @@ if [ $? -eq 0 ]; then
     # Install adafruit-nrfutil from offline directory
     echo "Installing adafruit-nrfutil from offline directory..."
     $SSH_CMD "$REMOTE_USER@$REMOTE_HOST" "
+        # Find available python command
+        if command -v python3 >/dev/null 2>&1; then
+            PYTHON_CMD=python3
+        elif command -v python >/dev/null 2>&1; then
+            PYTHON_CMD=python
+        else
+            echo 'Error: No python command found'
+            exit 1
+        fi
+        
         cd $REMOTE_DEST_DIR/offline_packages
         ~/.local/bin/pip install --no-index --find-links . adafruit-nrfutil --break-system-packages
     "
